@@ -56,11 +56,13 @@
 
 ### Диаграмма вариантов использования
 
-[Здесь будет размещена диаграмма вариантов использования и её описание]
+![Use case](images/UseCase.png)
 
 ### User-flow диаграммы
 
-[Здесь будут размещены user-flow диаграммы для каждой роли]
+![User Flow](images/UF1.png)
+![User Flow](images/UF2.png)
+![User Flow](images/UF3.png)
 
 ---
 
