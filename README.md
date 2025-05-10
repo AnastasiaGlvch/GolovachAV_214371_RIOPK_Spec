@@ -10,10 +10,6 @@
 2. [contragent-work-server](https://github.com/your-username/contragent-work-server) - Серверная часть приложения
 3. [contragent-work-docs](https://github.com/your-username/contragent-work-docs) - Документация проекта (текущий репозиторий)
 
-**Репозитории проекта:**
-- Сервер: [ссылка на серверный репозиторий]
-- Клиент: [ссылка на клиентский репозиторий]
-
 ---
 
 ## **Содержание**
@@ -77,145 +73,167 @@
 
 ### Спецификация API
 
-openapi: 3.0.0
-info:
-  title: API Документация
-  description: Разработанная документация предоставляет разработчикам полное описание всех рабочих методов API, включая функционал для проверки контрагентов, формирования отчетов и администрирования пользователей.
-  version: 1.0.0
-servers:
-  - url: https://api.example.com/v1
-    description: Production Server
+#### Основные API эндпоинты
 
-# Определения схем
-components:
-  schemas:
-    ContragentRequest:
-      type: object
-      properties:
-        unp:
-          type: string
-          description: 9-значный УНП
-          example: "100123456"
-    ContragentResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          example: "success"
-        data:
-          type: object
-          properties:
-            company_info:
-              type: object
-              description: Информация о компании
-            reliability_rating:
-              type: number
-              description: Рейтинг надежности контрагента
-    Error:
-      type: object
-      properties:
-        status:
-          type: string
-          example: "error"
-        message:
-          type: string
-          example: "Неверный формат УНП"
+1. `/api/check.php`
+   - **Метод**: POST
+   - **Описание**: Проверка контрагента по УНП
+   - **Параметры запроса**: JSON с полем `unp` (УНП контрагента)
+   - **Ответ**: Информация о компании, статус проверки, рейтинг надежности
 
-# Путь для проверки контрагента
-paths:
-  /check:
-    post:
-      summary: Проверка контрагента
-      description: Проверяет надежность контрагента по УНП через интеграцию с МНС и JustBel.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/ContragentRequest'
-      responses:
-        '200':
-          description: Успешный ответ
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ContragentResponse'
-        '400':
-          description: Неверный формат УНП
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+2. `/api/reports.php`
+   - **Методы**: GET, DELETE
+   - **Описание**: Получение списка отчетов или удаление отчета
+   - **Параметры GET**: `id` (опционально), `limit`, `offset`, `search`
+   - **Параметры DELETE**: `id` (обязательно)
+   - **Ответ**: Список отчетов или статус удаления
 
-# Другие пути (пример)
-  /report:
-    get:
-      summary: Получение отчета
-      description: Формирует отчет на основе исторических данных.
-      parameters:
-        - name: start_date
-          in: query
-          description: Дата начала периода
-          required: true
-          schema:
-            type: string
-            format: date
-        - name: end_date
-          in: query
-          description: Дата окончания периода
-          required: true
-          schema:
-            type: string
-            format: date
-      responses:
-        '200':
-          description: Успешный ответ
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  report_data:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        date:
-                          type: string
-                          format: date
-                        value:
-                          type: number
-        '400':
-          description: Неверные параметры запроса
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '500':
-          description: Ошибка сервера
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+3. `/api/export_pdf.php`
+   - **Метод**: POST
+   - **Описание**: Экспорт отчета в формат PDF
+   - **Параметры запроса**: JSON с полем `report_id` или `unp`
+   - **Ответ**: PDF-файл с отчетом о проверке контрагента
 
-# Авторизация
-securitySchemes:
-  BearerAuth:
-    type: http
-    scheme: bearer
-    bearerFormat: JWT
+#### Сервис аутентификации (/services/auth/api/)
 
-# Безопасность
-security:
-  - BearerAuth: []
+1. `/login.php`
+   - **Метод**: POST
+   - **Описание**: Аутентификация пользователей
+   - **Параметры запроса**: JSON с полями `username` и `password`
+   - **Ответ**: Токены доступа и обновления, информация о пользователе
 
+2. `/refresh-token.php`
+   - **Метод**: POST
+   - **Описание**: Обновление токена доступа
+   - **Параметры запроса**: JSON с полем `refresh_token`
+   - **Ответ**: Новые токены доступа и обновления
 
+3. `/validate-token.php`
+   - **Методы**: GET, POST
+   - **Описание**: Проверка действительности токена
+   - **Параметры**: Токен в заголовке Authorization
+   - **Ответ**: Статус валидации и информация о пользователе
+
+#### Управление пользователями (/services/auth/api/users/)
+
+1. `/index.php`
+   - **Методы**: GET, POST
+   - **Описание**: Получение списка всех пользователей или создание нового пользователя
+   - **Ответ GET**: Список пользователей
+   - **Параметры POST**: Данные нового пользователя
+
+2. `/user.php`
+   - **Методы**: GET, PUT, DELETE
+   - **Описание**: Получение, обновление или удаление пользователя
+   - **Параметры**: `id` (идентификатор пользователя)
+   - **Ответ**: Данные пользователя или статус операции
+
+#### Управление ролями (/services/auth/api/roles/)
+
+1. `/index.php`
+   - **Методы**: GET, POST
+   - **Описание**: Получение списка всех ролей или создание новой роли
+   - **Ответ GET**: Список ролей
+   - **Параметры POST**: Данные новой роли
+
+2. `/role.php`
+   - **Методы**: GET, PUT, DELETE
+   - **Описание**: Получение, обновление или удаление роли
+   - **Параметры**: `id` (идентификатор роли)
+   - **Ответ**: Данные роли или статус операции
+
+Все API-эндпоинты возвращают данные в формате JSON, за исключением `/api/export_pdf.php`, который возвращает PDF-файл. Для доступа к защищенным эндпоинтам требуется передача JWT-токена в заголовке Authorization.
+
+### Безопасность
+
+В проекте реализованы комплексные меры безопасности для защиты данных и обеспечения корректного доступа к ресурсам системы.
+
+#### Аутентификация
+
+Система использует JWT (JSON Web Tokens) для аутентификации пользователей. Этот подход обеспечивает безопасную и stateless аутентификацию.
+
+```php
+// Фрагмент кода из JwtUtil.php
+public static function generateToken($userData) {
+    $issuedAt = time();
+    $expirationTime = $issuedAt + self::TOKEN_EXPIRATION;
+    
+    $payload = [
+        'iat' => $issuedAt,
+        'exp' => $expirationTime,
+        'data' => [
+            'id' => $userData['id'],
+            'username' => $userData['username'],
+            'email' => $userData['email'] ?? null,
+            'role' => $userData['role_name']
+        ]
+    ];
+    
+    return self::encode($payload);
+}
+
+public static function validateToken($token) {
+    try {
+        $decoded = self::decode($token);
+        
+        // Проверка срока действия
+        if ($decoded['exp'] < time()) {
+            return false;
+        }
+        
+        return $decoded['data'];
+    } catch (Exception $e) {
+        return false;
+    }
+}
+```
+
+#### Авторизация
+
+Авторизация основана на ролевой модели, которая определяет права доступа к различным функциям системы.
+
+```php
+// Фрагмент кода из api/reports.php
+// Проверка ролей (доступ только для администратора и аналитика)
+if ($user['role'] !== 'administrator' && $user['role'] !== 'analyst') {
+    http_response_code(403);
+    echo json_encode(['status' => 'error', 'message' => 'Доступ запрещен']);
+    exit;
+}
+```
+
+#### Защита от уязвимостей
+
+1. **Защита от инъекций SQL**
+
+Все запросы к базе данных выполняются с использованием подготовленных выражений (prepared statements), что предотвращает SQL-инъекции.
+
+```php
+// Пример защиты от SQL-инъекций
+$sql = "SELECT * FROM users WHERE username = :username";
+$stmt = $db->prepare($sql);
+$stmt->execute([':username' => $username]);
+```
+
+2. **Защита от CSRF (Cross-Site Request Forgery)**
+
+Использование JWT в заголовках запросов вместо cookie обеспечивает защиту от CSRF-атак.
+
+#### Безопасное хранение данных
+
+Пароли пользователей хранятся в базе данных в виде хешей, созданных с использованием алгоритма bcrypt.
+
+```php
+// Пример хеширования пароля
+$hashedPassword = password_hash($plainTextPassword, PASSWORD_BCRYPT, ['cost' => 12]);
+
+// Проверка пароля
+$isValid = password_verify($inputPassword, $hashedPasswordFromDb);
+```
+
+#### Шифрование данных при передаче
+
+Все коммуникации между клиентом и сервером осуществляются через HTTPS, что обеспечивает шифрование данных при передаче.
 
 ## **Тестирование**
 
