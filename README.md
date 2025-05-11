@@ -66,7 +66,8 @@
 
 ### UML-диаграммы
 
-![Диаграмма классов](images/Class.png)
+![Диаграмма классов](images/Class1.png)
+![Диаграмма классов](images/Class2.png)
 ![Диаграмма компонентов](images/Components.png)
 ![Диаграмма последовательности](images/Placements.png)
 ![Диаграмма размещения](images/Sequence.png)
